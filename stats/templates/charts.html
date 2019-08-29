@@ -1,0 +1,435 @@
+{% extends 'sales/base.html' %}
+{% load staticfiles %}
+
+
+{% block content %} 
+
+<div class="col-md-12">
+	 <div class='row'>
+     <form id="opportunity_filter" method="POST" action="">
+{#        <td>{{ opportunity_list.all}}</td>#}
+     </form>
+		<div class='col-sm-4'>
+		<p   style = "font-size:130%;  " ><b> Opportunities </b></p>
+			<div id="reportrangePie" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
+				<i class="fa fa-calendar"></i>&nbsp;
+				<span></span> <i class="fa fa-caret-down"></i>
+			</div>	
+			<canvas id="PieChart" width="400" height="400"></canvas>
+		</div>
+		<div class='col-sm-4'>	
+			<p   style = "font-size:130%;  " ><b> Cash flow </b></p>
+			<div id="reportrangeBar" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
+				<i class="fa fa-calendar"></i>&nbsp;
+				<span></span> <i class="fa fa-caret-down"></i>
+			</div>	
+			<canvas style = "padding-top: 20px" id="BarChart" width="400" height="400"></canvas>			
+		</div>
+		<div class='col-sm-4'>
+		<p   style = "font-size:130%;  " ><b> Income/Expenses </b></p>
+			<div id="reportrangeLine" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
+				<i class="fa fa-calendar"></i>&nbsp;
+				<span></span> <i class="fa fa-caret-down"></i>
+			</div>				
+			<canvas id="LineChart" width="400" height="400"></canvas>
+		</div>
+	</div>
+</div>
+
+ 
+{% endblock %}
+
+
+
+{% block extralinks %}
+
+	{% include 'base/css.html' %}
+    {% include 'base/bootstrap_defaults.html' %}
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.min.js"></script>
+
+   
+{%endblock extralinks %}
+
+{%block js_block%}
+
+<script>
+$(document).ready(function(){
+    var startDatePie = moment().subtract(29, 'days').format('YYYY-MM-DD')
+    var endDatePie = moment().format('YYYY-MM-DD')
+    var endDatePie
+    var endpoint = 'data'
+    $.ajax({
+        method: "GET",
+        url: endpoint,
+        success: function(data){
+
+
+            //for pie chart
+           sum_a = [400]
+           sum_b = [500]
+            {##}
+            {##}
+           labels_s = ["January","February","March","April","May","June","July", "August", "September", "October"]
+           data1 = [168,170,178,190,203,276,408,547,675,734]
+           data2 = [40,20,10,16,24,38,74,167,508,784]
+
+           test1 = data
+            dataPie = data.dataPie
+           labelsPie = data.labelsPie
+           amountsPie = data.amountsPie
+
+           labelsLost = data.labelsLost
+           labelsWon = data.labelsWon
+           amountsLost = data.amountsLost
+           amountsWon = data.amountsWon
+            console.log(dataPie)
+            setChart()
+            setPieChart()
+         $('#reportrangePie').on('apply.daterangepicker', function(ev, picker) {
+             startDatePie = picker.startDate.format('YYYY-MM-DD')
+             endDatePie = picker.endDate.add(1, 'days').format('YYYY-MM-DD')
+            {#amountsPie = []#}
+            {# labelsPie=[]#}
+            {# labelsTemp=[]#}
+            {# dataTemp=[]#}
+            {# var x;#}
+            {# var y;#}
+            {# for (x = 0; x < dataPie.length; x++){#}
+            {#     if ((dataPie[x][12] >= startDatePie) && (dataPie[x][12]<endDatePie) ){#}
+            {#            amountsPie.push(dataPie[x][5])#}
+            {#            labelsTemp.push(dataPie[x][3])#}
+            {#            dataTemp.push(dataPie[x])#}
+            {#     }#}
+            {# }#}
+            {# labelsPie = labelsTemp.filter(onlyUnique)#}
+            {##}
+            {# for (x = 0; x < labelsPie.length; x++){#}
+            {#     sum = 0#}
+            {#     for (y=0; y < dataTemp.length; y++){#}
+            {#         if (labelsPie[x]==dataPie[y][3]){#}
+            {#             sum = sum + dataPie[y][5]#}
+            {#         }#}
+            {#     }#}
+            {#     amountsPie.push(sum)#}
+            {# }#}
+            {##}
+            {# console.log(dataTemp)#}
+            {# console.log(labelsPie)#}
+            {# console.log(amountsPie)#}
+
+
+            {# for (x=0; x< dataPie2.length-1; x++){#}
+            {#     for (y=x+1; y<dataPie2.length; y++){#}
+            {#         if (dataPie2[x][3]==dataPie[y][3]){}#}
+            {##}
+            {#     }#}
+            {# }#}
+            {##}
+            {#console.log(amountsPie)#}
+            {#     console.log(labelsPie)#}
+            {# console.log(dataPie2)#}
+
+
+             setPieChart()
+        });
+
+        },
+        error: function(error_data){
+            console.log("error")
+            console.log(error_data)
+        }
+     })
+
+    function onlyUnique(value, index, self) {
+                return self.indexOf(value) === index;
+            }
+
+function setPieChart (){
+         var ctx1 = document.getElementById("PieChart");
+        var pieChart = new Chart(ctx1, {
+    type: 'pie',
+    data:{
+        labels: labelsPie,
+        datasets: [
+            {
+            data: amountsPie ,
+            backgroundColor:[
+			"rgba(255,0,0,0.4)",
+			"rgba(0,233,24,0.4)",
+            "rgba(254,255,0,0.4)",
+            "rgba(255,115,0,0.4)",
+            "rgba(16,61,255,0.4)",
+			"rgba(255,0,193,0.4)",
+            "rgba(0,251,255,0.4)",
+            "rgba(0,255,143,0.4)",
+            "rgba(167,0,255,0.4)",
+			],
+            borderColor: [
+			"rgba(255,0,0,1)",
+			"rgba(0,233,24,1)",
+            "rgb(231,195,0)",
+            "rgba(255,115,0,1)",
+            "rgba(16,61,255,1)",
+			"rgba(255,0,193,1)",
+            "rgba(0,251,255,1)",
+            "rgba(0,255,143,1)",
+            "rgb(162,0,255)",
+			]
+            },
+           ]},
+    options: {
+         scales: {
+             yAxes: [{
+				display: false
+             }],
+             xAxes: [{display: false
+           }],
+         },
+		 title: {
+			},
+     },
+})
+}
+
+function setChart(){
+
+   <!--   FOR LINE CHART -->
+    <!-- var result_all = [] -->
+    <!-- var result_a=[] -->
+    <!-- var result_b=[] -->
+    <!-- for ( i = 0; i< time_a.length; i++){ -->
+        <!-- result_a.push({x: time_a[i], y: defaultData_a[i]}) -->
+    <!-- } -->
+     <!-- for ( i = 0; i< time_b.length; i++){ -->
+        <!-- result_b.push({x: time_b[i], y: defaultData_b[i]}) -->
+    <!-- } -->
+     <!-- for ( i = 0; i< time_all.length; i++){ -->
+        <!-- result_all.push({x: time_all[i], y: defaultData_all[i]}) -->
+    <!-- } -->
+
+    <!-- var labels_a = result_a.map(e => moment(e.x, 'hh:mm:ss')); -->
+    <!-- var data_a = result_a.map(e => e.y); -->
+
+    <!-- var labels_b =  result_b.map(e => moment(e.x, 'hh:mm:ss')); -->
+    <!-- var data_b =result_b.map(e => e.y); -->
+
+    <!-- var labels_all =  result_all.map(e => moment(e.x, 'hh:mm:ss')); -->
+    <!-- var data_all =result_all.map(e => e.y); -->
+    <!-- console.log(data_b) -->
+    <!-- console.log(time_b) -->
+    //CONTEXT
+
+    var ctx2 = document.getElementById("BarChart");
+    var ctx3 = document.getElementById("LineChart");
+	
+
+var lineChart = new Chart(ctx3, {
+    type: 'line',
+    data:{
+        labels: labels_s,
+        borderWidth: 1,
+        datasets: [
+            {
+			label:"Income",
+            data:data1,
+            lineTension: 0,
+			backgroundColor:"rgba(92, 214, 92, 0)",
+            borderColor:"rgb(92, 214, 92)",
+             },
+            {
+			label: "Expenses",
+            data:data2,
+            lineTension: 0,
+			backgroundColor:"rgba(255, 77, 77, 0)",
+            borderColor:"rgb(255, 77, 77)",
+            }]},
+    options: {
+        title: {
+			},
+		scales:{
+			xAxes: [{ 				
+			ticks: {
+               autoSkip: false,
+			   },
+            <!-- barPercentage: 0.5, -->
+            <!-- type: 'time', -->
+            <!-- time: { -->
+               <!-- unit: 'month', -->
+               <!-- displayFormats: { -->
+                  <!-- month: 'month', -->
+               <!-- } -->
+            <!-- } -->
+         }]
+		}
+     },
+})
+
+
+
+
+   
+	
+var BarChart = new Chart (ctx2, {
+  type: 'bar',
+  data: {
+    labels: labels_s,
+    datasets: [
+         {
+         label: "CLOSED WON",
+        {#labels: labelsWon,#}
+        data: amountsWon,
+		backgroundColor:"rgba(0,233,24,0.4)",
+        borderColor:"rgb(38,216,0)",
+      },
+        {
+        label: "CLOSED LOST",
+        {#labels: labelsLost,#}
+        data: amountsLost,
+		backgroundColor:"rgba(255, 99, 132, 0.4)",
+        borderColor:"rgba(255,99,132,1)",
+      },
+
+    ]
+  },
+  options: {
+	legend: {
+		display: true
+	},
+    title: {
+    },
+	scales: {
+		yAxes:[{
+			scaleLabel: {
+				display: true,
+				labelString: 'Amount closed'
+			 }
+		}],
+		xAxes:[{
+			ticks: {
+               autoSkip: false,
+			   }
+		
+		}]
+	}
+  }
+})
+
+    }
+	})
+	
+        
+  $(function() {
+
+    var start = moment().subtract(29, 'days');
+    var end = moment();
+
+    function cb(start, end) {
+        $('#reportrangePie span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+    }
+
+    $('#reportrangePie').daterangepicker({
+        startDate: start,
+        endDate: end,
+        ranges: {
+           'Today': [moment(), moment()],
+           'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+           'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+           'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+           'This Month': [moment().startOf('month'), moment().endOf('month')],
+           'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+        }
+    }, cb);
+
+    cb(start, end);
+	
+    {#$('#reportrangePie').on('apply.daterangepicker', function(ev, picker) {#}
+    {#  console.log(picker.startDate.format('YYYY-MM-DD'));      #}
+    {#  console.log(picker.endDate.format('YYYY-MM-DD'));#}
+    {# });#}
+
+  });
+
+$(function() {
+
+    var start = moment().subtract(29, 'days');
+    var end = moment();
+
+    function cb(start, end) {
+        $('#reportrangeBar span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+    }
+
+    $('#reportrangeBar').daterangepicker({
+        startDate: start,
+        endDate: end,
+        ranges: {
+           'Today': [moment(), moment()],
+           'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+           'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+           'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+           'This Month': [moment().startOf('month'), moment().endOf('month')],
+           'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+        }
+    }, cb);
+
+    cb(start, end);
+	
+    $('#reportrangeBar').on('apply.daterangepicker', function(ev, picker) {
+      console.log(picker.startDate.format('YYYY-MM-DD'));
+      console.log(picker.endDate.format('YYYY-MM-DD'));
+    });
+});
+
+$(function() {
+
+    var start = moment().subtract(29, 'days');
+    var end = moment();
+
+    function cb(start, end) {
+        $('#reportrangeLine span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+    }
+
+    $('#reportrangeLine').daterangepicker({
+        startDate: start,
+        endDate: end,
+        ranges: {
+           'Today': [moment(), moment()],
+           'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+           'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+           'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+           'This Month': [moment().startOf('month'), moment().endOf('month')],
+           'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+        }
+		
+    }, cb);
+
+    cb(start, end);
+
+    $('#reportrangeLine').on('apply.daterangepicker', function(ev, picker) {
+      console.log(picker.startDate.format('YYYY-MM-DD'));
+      console.log(picker.endDate.format('YYYY-MM-DD'));
+    });
+
+    $("a[rel='page']").click(function(e){
+    e.preventDefault();
+    $('#opportunity_filter').attr("action", $(this).attr("href"));
+    $('#opportunity_filter').submit();
+  });
+
+    $(document).ready(function(){
+    $(".filter_toggle").click(function(){
+      $(".list_filter_row").toggle();
+    });
+  });
+
+});
+  
+	  
+	  
+    </script>
+	
+	
+
+{%endblock js_block%}
+
+    
